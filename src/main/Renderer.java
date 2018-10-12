@@ -10,6 +10,8 @@ public class Renderer {
     private BufferedImage img;
     private Canvas canvas;
     private Polygon polygon;
+    public int mouseClicked;
+    private RegularPolygon regularPolygon;
     private static final int FPS = 1000 / 30;
 
     public BufferedImage getImg() {
@@ -184,5 +186,82 @@ public class Renderer {
             this.polygon.getPointsList().clear();
         }
     }
+
+    public void drawTriangle(int x, int y, int x1, int y1, int color, RegularPolygon regularPolygon){
+        int deg = 120;
+//          angle in radians
+        double angle = Math.toRadians(deg);
+        clear();
+        drawPixel(x, y, color);
+        drawLine(x, y, x1, y1, color);
+        Point centerPoint = new Point(x, y);
+        Point rangePoint = new Point(x1, y1);
+        for(int i = 0; i<3; i++){
+//          get difference
+            int xFirst = (rangePoint.getX() - centerPoint.getX());
+            int yFirst = (rangePoint.getY() - centerPoint.getY());
+//          apply rotation
+            int xDif = (int) ((double) xFirst * Math.cos(angle) - yFirst * Math.sin(angle));
+            int yDif = (int) ((double) xFirst * Math.sin(angle) + yFirst * Math.cos(angle));
+//          get the diff back
+            xDif = ( xDif + centerPoint.getX());
+            yDif =(yDif + centerPoint.getY());
+            drawLine(rangePoint.getX(), rangePoint.getY(), xDif, yDif, color);
+            rangePoint.setX(xDif);
+            rangePoint.setY(yDif);
+        }
+        this.regularPolygon = new RegularPolygon(centerPoint.getX(), centerPoint.getY(), rangePoint.getX(), rangePoint.getY());
+//        System.out.println(regularPolygon.getCenterPoint().getX());
+//        System.out.println(regularPolygon.getRangePoint().getY());
+    }
+
+
+
+    public void drawRegularPolygon(int x, int y, int x1, int y1, int mouseClicked, int color, RegularPolygon regularPolygon){
+        int deg = 0;
+        RegularPolygon drawedTriangle;
+        if(mouseClicked == 1){
+           drawTriangle(x, y, x1, y1, color, regularPolygon);
+        }else if(mouseClicked == 0x56){
+            drawedTriangle = this.regularPolygon;
+//            System.out.println(drawedTriangle.getCenterPoint().getX());
+//            System.out.println(drawedTriangle.getCenterPoint().getY());
+//            System.out.println(x1);
+//            System.out.println(y1);
+//  clear();
+            int countOfPoints;
+            int distance;
+            if(x1 > drawedTriangle.rangePoint.getX() && y1 > drawedTriangle.rangePoint.getY()){
+                distance = (x1 - drawedTriangle.rangePoint.getX()) + (y1 - drawedTriangle.rangePoint.getY());
+                distance = distance/10+1;
+            }else {
+                distance = 3;
+            }
+            countOfPoints = distance;
+//            System.out.println(countOfPoints);
+            deg = 360/countOfPoints;
+            double angle = Math.toRadians(deg);
+
+            for(int i = 0; i<countOfPoints; i++){
+
+//          get difference
+                int xFirst = (drawedTriangle.rangePoint.getX() - drawedTriangle.centerPoint.getX());
+                int yFirst = (drawedTriangle.rangePoint.getY() - drawedTriangle.centerPoint.getY());
+                System.out.println(xFirst);
+                System.out.println(yFirst);
+//          apply rotation
+                int xDif = (int) ((double) xFirst * Math.cos(angle) - yFirst * Math.sin(angle));
+                int yDif = (int) ((double) xFirst * Math.sin(angle) + yFirst * Math.cos(angle));
+//          get the diff back
+                xDif = (xDif + drawedTriangle.centerPoint.getX());
+                yDif = (yDif + drawedTriangle.centerPoint.getY());
+                drawLine(drawedTriangle.rangePoint.getX(), drawedTriangle.rangePoint.getY(), xDif, yDif, color);
+                drawedTriangle.rangePoint.setX(xDif);
+                drawedTriangle.rangePoint.setY(yDif);
+            }
+
+        }
+    }
+
 
 }
