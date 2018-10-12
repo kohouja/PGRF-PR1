@@ -2,11 +2,9 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
+
 
 public class PixelTest {
 
@@ -14,7 +12,16 @@ public class PixelTest {
     private BufferedImage img; // objekt pro zápis pixelů
     private Canvas canvas; // plátno pro vykreslení BufferedImage
     private Renderer renderer;
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
 
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
+    }
     public PixelTest() {
         window = new JFrame();
         // bez tohoto nastavení se okno zavře, ale aplikace stále běží na pozadí
@@ -22,7 +29,14 @@ public class PixelTest {
         window.setSize(800, 600); // velikost okna
         window.setLocationRelativeTo(null);// vycentrovat okno
         window.setTitle("PGRF1 cvičení"); // titulek okna
-//        detekovat ze se zmenilo okno
+        window.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                Dimension size = e.getComponent().getSize();
+                BufferedImage newImg = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
+                renderer.resize(newImg, size);
+            }
+        });
         // inicializace image, nastavení rozměrů (nastavení typu - pro nás nedůležité)
         img = new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB);
 
@@ -34,32 +48,33 @@ public class PixelTest {
 
         renderer = new Renderer(img, canvas);
 
-        renderer.drawPixel(100, 50, Color.GREEN.getRGB());
+//        renderer.drawPixel(100, 50, Color.GREEN.getRGB());
         // 0x00ff00 == Color.GREEN.getRGB()
         // renderer.drawLine(0, 1, 8, 4, 0xffff00);
-
-//        canvas.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//
-//                renderer.drawPixel(e.getX(), e.getY(), 0xffffff);
-//                //points.add(e.getX());
-//                //points.add(e.getY());
-//                //renderer.drawPolygon(points);
-//            }
-//        });
-
-        canvas.addMouseMotionListener(new MouseAdapter() {
+        Polygon polygon = new Polygon();
+        canvas.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseDragged(MouseEvent e) {
-                renderer.clear();
-                renderer.drawLine(400, 300, e.getX(), e.getY(), 0x00ffff);
+            public void mouseClicked(MouseEvent e) {
 
+//                renderer.drawPixel(e.getX(), e.getY(), 0xffffff);
+                //points.add(e.getX());
+                //points.add(e.getY());
+                //renderer.drawPolygon(points);
+                renderer.drawIrregularPolygon(e.getX(), e.getY(), 0xffffff, polygon);
             }
         });
 
+//        canvas.addMouseMotionListener(new MouseAdapter() {
+//            @Override
+//            public void mouseDragged(MouseEvent e) {
+//                renderer.clear();
+//                renderer.drawDDA(window.getWidth()/2, window.getHeight()/2, e.getX(), e.getY(), 0x00ffff);
+//
+//            }
+//        });
 
 
+        //       smaze platno pri stisku klavesy c
         canvas.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
